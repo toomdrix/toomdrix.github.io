@@ -3,26 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Toomdrix Recipes</title>
+  <title>Toomdrix | Projects & Tools</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-    h1 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-    .recipe-list { list-style: none; padding: 0; }
-    .recipe-list li { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 5px; }
-    .recipe-list a { text-decoration: none; color: #0066cc; font-weight: bold; }
-    .recipe-list a:hover { text-decoration: underline; }
+    :root {
+      --bg: #090d16;
+      --card: #1e293b;
+      --card-hover: #334155;
+      --border: rgba(255, 255, 255, 0.08);
+      --accent: #38bdf8;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 20px;
+    }
+    .container {
+      max-width: 700px;
+      width: 100%;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p.subtitle {
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      background: var(--card-hover);
+      box-shadow: 0 8px 30px rgba(56, 189, 248, 0.15);
+    }
+    .card-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title span.arrow {
+      color: var(--accent);
+      font-size: 16px;
+      transition: transform 0.2s ease;
+    }
+    .card:hover .card-title span.arrow {
+      transform: translateX(4px);
+    }
+    .card-desc {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    footer {
+      margin-top: 50px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
-  <h1>🍳 Toomdrix Recipes Collection</h1>
-  <p>UK-friendly, fool-proof step-by-step recipes with detailed shopping lists and preparation instructions.</p>
-  <ul class="recipe-list">
-    <li><a href="README.html">README</a></li>
-    <li><a href="chocolate_layer_cake.html">Chocolate Layer Cake</a></li>
-    <li><a href="old_fashioned_cherry_cake.html">Old Fashioned Cherry Cake</a></li>
-    <li><a href="sparkling_jumbo_blueberry_muffins.html">Sparkling Jumbo Blueberry Muffins</a></li>
-  </ul>
-  <hr>
-  <p><small>Auto-synced from <a href="https://github.com/toomdrix/recipes">recipes repository</a></small></p>
+  <div class="container">
+    <header>
+      <h1>⚡ Toomdrix Portal</h1>
+      <p class="subtitle">Projects, Tools & Web Applications</p>
+    </header>
+
+    <div class="grid">
+      <!-- MicroPlasma CAM -->
+      <a href="plasma/" class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">
+          MicroPlasma CAM
+          <span class="arrow">→</span>
+        </div>
+        <div class="card-desc">
+          Browser-based 2D DXF plasma CAM generator. Computes kerf offsets, lead-in/lead-out arcs, small-hole rules, and exports clean GRBL G-code (.nc).
+        </div>
+      </a>
+
+      <!-- Recipes Collection -->
+      <a href="recipes/" class="card">
+        <div class="card-icon">🍳</div>
+        <div class="card-title">
+          Recipes Collection
+          <span class="arrow">→</span>
+        </div>
+        <div class="card-desc">
+          UK-friendly, fool-proof step-by-step baking & cooking recipes with detailed shopping lists and prep guides.
+        </div>
+      </a>
+    </div>
+
+    <footer>
+      <p>Hosted on <a href="https://github.com/toomdrix" target="_blank">GitHub Pages</a></p>
+    </footer>
+  </div>
 </body>
 </html>
