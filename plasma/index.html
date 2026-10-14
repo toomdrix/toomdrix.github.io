@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>MicroPlasma CAM - 2D Web Plasma CAM</title>
-  <script type="module" crossorigin src="./assets/index-cAuYdADo.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-fnlLg_e3.css">
+  <script type="module" crossorigin src="./assets/index-YuqNhceT.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-AGhxC12d.css">
 </head>
 <body>
   <!-- Header Bar -->
@@ -27,6 +27,7 @@
         <option value="flange-bracket">4-Bolt Flange Plate</option>
         <option value="gusset-bracket">Gusset with Slots</option>
         <option value="slot-link">Pill Slot Link</option>
+        <option value="open-slit-plate">Open Slit & Parting Cut Plate</option>
       </select>
 
       <!-- Upload DXF File Button -->
@@ -58,6 +59,17 @@
         <button id="btnZoomFit" class="btn btn-secondary" title="Zoom to Fit">
           <span>🔍 Fit</span>
         </button>
+        <div class="overlay-button-group" title="Flip entire part">
+          <button id="btnFlipPartH" class="btn btn-secondary" title="Flip Part Horizontally (⇄ X axis)">
+            <span>⇄ Flip H</span>
+          </button>
+          <button id="btnFlipPartV" class="btn btn-secondary" title="Flip Part Vertically (⇅ Y axis)">
+            <span>⇅ Flip V</span>
+          </button>
+          <button id="btnFlipPartBoth" class="btn btn-secondary" title="Flip Part Both (180° rotation)">
+            <span>⤹ Both</span>
+          </button>
+        </div>
       </div>
 
       <!-- Toolpath Legend Bar -->
@@ -83,6 +95,61 @@
     <aside class="sidebar-panel" id="sidebarPanel">
       <!-- Warnings Container -->
       <div id="warningsContainer" style="display: none;" class="warnings-banner"></div>
+
+      <!-- Section: Selected Shape Inspector (Dynamic) -->
+      <div class="panel-section inspector-section" id="inspectorSection" style="display: none;">
+        <div class="panel-header inspector-header">
+          <div class="panel-title" id="inspectorTitle">🔍 Selected Contour</div>
+          <span class="panel-badge" id="inspectorTypeBadge">Inner Hole</span>
+        </div>
+        <div class="panel-content">
+          <!-- Controls for Closed Loops -->
+          <div id="inspectorClosedControls">
+            <div class="control-row">
+              <label class="control-label">Cut Side</label>
+              <div class="radio-pill-group" id="inspectorCutSideGroup">
+                <div class="radio-pill" data-side="INNER_HOLE" title="Lead-in inside hole slug, CCW, kerf inward">🔵 Inside (Hole)</div>
+                <div class="radio-pill" data-side="OUTER_PERIMETER" title="Lead-in outside in scrap, CW, kerf outward">🟠 Outside (Part)</div>
+              </div>
+            </div>
+            <div class="control-row">
+              <label class="control-label">Start Point</label>
+              <button type="button" id="btnInspectorCycleNode" class="btn btn-secondary btn-sm" style="flex: 1;">
+                <span>↻ Next Start Node</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Controls for Open Contours -->
+          <div id="inspectorOpenControls" style="display: none;">
+            <div class="control-row">
+              <label class="control-label">Direction</label>
+              <button type="button" id="btnInspectorFlipDirection" class="btn btn-secondary btn-sm" style="flex: 1;">
+                <span>⇄ Flip (Start ↔ End)</span>
+              </button>
+            </div>
+          <!-- Flip Feature Controls (Both Closed and Open) -->
+          <div class="control-row">
+            <label class="control-label">Flip Feature</label>
+            <div class="btn-group" style="display: flex; gap: 4px; flex: 1;">
+              <button type="button" id="btnInspectorFlipH" class="btn btn-secondary btn-xs" style="flex: 1;" title="Flip this feature horizontally">
+                <span>⇄ H</span>
+              </button>
+              <button type="button" id="btnInspectorFlipV" class="btn btn-secondary btn-xs" style="flex: 1;" title="Flip this feature vertically">
+                <span>⇅ V</span>
+              </button>
+              <button type="button" id="btnInspectorFlipBoth" class="btn btn-secondary btn-xs" style="flex: 1;" title="Flip this feature horizontally & vertically (180°)">
+                <span>⤹ Both</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="inspector-info-row" id="inspectorInfoRow">
+            <span id="inspectorDimensions"></span>
+            <span id="inspectorLeadInInfo"></span>
+          </div>
+        </div>
+      </div>
 
       <!-- Section: Machine & Material -->
       <div class="panel-section">
@@ -118,7 +185,7 @@
       <!-- Section: Lead-In & Lead-Out -->
       <div class="panel-section">
         <div class="panel-header">
-          <div class="panel-title">Lead-In & Lead-Out</div>
+          <div class="panel-title">Closed Loop Lead-In / Out</div>
           <span class="panel-chevron">▾</span>
         </div>
         <div class="panel-content">
@@ -150,6 +217,57 @@
               <input type="number" id="paramLeadOutLength" class="input-num" step="0.5" min="0" max="10" />
               <span class="input-unit">mm</span>
             </div>
+          </div>
+          <!-- Quick Batch Toggle Buttons for Closed Loops -->
+          <div style="margin-top: 10px; display: flex; gap: 6px;">
+            <button type="button" id="btnFlipAllToHoles" class="btn btn-secondary btn-xs" title="Force all closed shapes to Inside cut (Holes)" style="flex: 1; justify-content: center;">
+              🔵 All Holes (Inside)
+            </button>
+            <button type="button" id="btnFlipAllToPerimeters" class="btn btn-secondary btn-xs" title="Force all closed shapes to Outside cut (Parts)" style="flex: 1; justify-content: center;">
+              🟠 All Parts (Outside)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Open Contours -->
+      <div class="panel-section">
+        <div class="panel-header">
+          <div class="panel-title">Open Contours (Slits & Lines)</div>
+          <span class="panel-chevron">▾</span>
+        </div>
+        <div class="panel-content">
+          <div class="control-row">
+            <label class="control-label">Lead-In</label>
+            <div class="radio-pill-group" id="openLeadInTypeGroup">
+              <div class="radio-pill active" data-value="inline" title="In-line straight extension along tangent before start point - ideal for plate edge starts">In-line</div>
+              <div class="radio-pill" data-value="none" title="Pierce directly at starting vertex without offset - ideal for marking/scoring">Direct</div>
+              <div class="radio-pill" data-value="arc" title="Tangential arc lead-in">Arc</div>
+            </div>
+          </div>
+          <div class="control-row" id="rowOpenLeadInDist">
+            <label class="control-label" for="paramOpenLeadInDist">Lead-In Distance</label>
+            <div class="control-input-group">
+              <input type="number" id="paramOpenLeadInDist" class="input-num" step="0.5" min="0.1" max="25" value="3.0" />
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+          <div class="control-row">
+            <label class="control-label">Lead-Out</label>
+            <div class="radio-pill-group" id="openLeadOutTypeGroup">
+              <div class="radio-pill active" data-value="none" title="Torch OFF directly at end of cut line - no exit notch">None</div>
+              <div class="radio-pill" data-value="inline" title="In-line straight overcut along tangent past end point">In-line</div>
+            </div>
+          </div>
+          <div class="control-row" id="rowOpenLeadOutDist" style="display: none;">
+            <label class="control-label" for="paramOpenLeadOutDist">Lead-Out Distance</label>
+            <div class="control-input-group">
+              <input type="number" id="paramOpenLeadOutDist" class="input-num" step="0.5" min="0.1" max="25" value="3.0" />
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+          <div class="info-callout">
+            💡 <strong>Tip:</strong> Tap any open contour on the canvas to immediately <strong>flip the cut direction</strong> (Start ⇄ End).
           </div>
         </div>
       </div>
@@ -211,8 +329,41 @@
           </div>
 
           <div class="control-row">
-            <label class="control-label" for="cadOriginToggle">Use CAD Origin (0,0)</label>
+            <label class="control-label">Start Point</label>
+            <div class="radio-pill-group" id="startPositionGroup">
+              <div class="radio-pill active" data-start="datum" title="Rapid from part datum (e.g. Bottom-Left) to first cut">From Datum</div>
+              <div class="radio-pill" data-start="direct" title="Torch starts directly at first pierce point - zero initial rapid">First Cut (Direct)</div>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label class="control-label" for="autoZeroCadToggle" title="Automatically strip arbitrary OnShape / CAD sketch coordinates on import, placing part neatly at (0,0)">Auto-Zero CAD</label>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="autoZeroCadToggle" checked title="Automatically normalize CAD coordinates to (0,0) on import" />
+              <button type="button" id="btnAlignOrigin" class="btn btn-secondary btn-xs" title="Strip CAD offset and move part's bottom-left directly to (0,0)">
+                <span>🎯 Zero Offset</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="control-row">
+            <label class="control-label" for="cadOriginToggle" title="Force tool to use raw OnShape CAD origin instead of part datum">Use CAD Origin</label>
             <input type="checkbox" id="cadOriginToggle" />
+          </div>
+
+          <div class="control-row" style="margin-top: 6px;">
+            <label class="control-label">Flip Part</label>
+            <div class="btn-group" style="display: flex; gap: 4px; flex: 1;">
+              <button type="button" id="btnSidebarFlipH" class="btn btn-secondary btn-xs" style="flex: 1;" title="Flip entire part horizontally (⇄ X axis)">
+                <span>⇄ H</span>
+              </button>
+              <button type="button" id="btnSidebarFlipV" class="btn btn-secondary btn-xs" style="flex: 1;" title="Flip entire part vertically (⇅ Y axis)">
+                <span>⇅ V</span>
+              </button>
+              <button type="button" id="btnSidebarFlipBoth" class="btn btn-secondary btn-xs" style="flex: 1;" title="Flip entire part both horizontally and vertically (180°)">
+                <span>⤹ Both</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
